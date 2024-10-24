@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cmath>
+#include <string>
 using namespace std;
 
 struct Node
@@ -7,6 +9,109 @@ struct Node
     Node *next;
 };
 
+int fibonacciSearch(int arr[], int x, int n)
+{
+    int fibMMm2 = 0;  
+    int fibMMm1 = 1; 
+    int fibM = fibMMm2 + fibMMm1;  
+
+    while (fibM < n)
+    {
+        fibMMm2 = fibMMm1;
+        fibMMm1 = fibM;
+        fibM = fibMMm2 + fibMMm1;
+    }
+
+    int offset = -1;
+
+    while (fibM > 1)
+    {
+        int i = min(offset + fibMMm2, n - 1);
+
+        if (arr[i] < x)
+        {
+            fibM = fibMMm1;
+            fibMMm1 = fibMMm2;
+            fibMMm2 = fibM - fibMMm1;
+            offset = i;
+        }
+        else if (arr[i] > x)
+        {
+            fibM = fibMMm2;
+            fibMMm1 = fibMMm1 - fibMMm2;
+            fibMMm2 = fibM - fibMMm1;
+        }
+        else
+            return i;
+    }
+
+    if (fibMMm1 && arr[offset + 1] == x)
+        return offset + 1;
+
+    return -1;
+}
+
+// Jump Search untuk integer
+int jumpSearch(int arr[], int x, int n)
+{
+    int step = sqrt(n);
+    int prev = 0;
+
+    while (arr[min(step, n) - 1] < x)
+    {
+        prev = step;
+        step += sqrt(n);
+        if (prev >= n)
+            return -1;
+    }
+
+    while (arr[prev] < x)
+    {
+        prev++;
+        if (prev == min(step, n))
+            return -1;
+    }
+
+    if (arr[prev] == x)
+        return prev;
+
+    return -1;
+}
+
+// Boyer-Moore untuk string
+int boyerMooreSearch(string text, string pattern)
+{
+    int m = pattern.length();
+    int n = text.length();
+
+    int badChar[256];
+    for (int i = 0; i < 256; i++)
+        badChar[i] = -1;
+
+    for (int i = 0; i < m; i++)
+        badChar[(int)pattern[i]] = i;
+
+    int s = 0;  // shift
+    while (s <= (n - m))
+    {
+        int j = m - 1;
+
+        while (j >= 0 && pattern[j] == text[s + j])
+            j--;
+
+        if (j < 0)
+        {
+            return s;
+            s += (s + m < n) ? m - badChar[text[s + m]] : 1;
+        }
+        else
+            s += max(1, j - badChar[text[s + j]]);
+    }
+
+    return -1;
+}
+
+// Fungsi lainnya tetap sama
 int length(Node *head)
 {
     int panjang = 0;
@@ -98,7 +203,10 @@ void menu()
     cout << "1. Tampilkan Linked List" << endl;
     cout << "2. Shell Sort (Descending)" << endl;
     cout << "3. Quick Sort (Ascending)" << endl;
-    cout << "4. Keluar" << endl;
+    cout << "4. Fibonacci Search" << endl;
+    cout << "5. Jump Search" << endl;
+    cout << "6. Boyer-Moore Search" << endl;
+    cout << "7. Keluar" << endl;
     cout << "================" << endl;
 }
 
@@ -126,7 +234,8 @@ int main()
     int arr[length(HEAD)];
     linkedList2Array(HEAD, arr);
 
-    int choice;
+    int choice, searchValue;
+    string text, pattern;
 
     do
     {
@@ -157,13 +266,42 @@ int main()
             display(HEAD);
             break;
         case 4:
+            cout << "Masukkan nilai yang ingin dicari dengan Fibonacci Search: ";
+            cin >> searchValue;
+            quickSort(arr, 0, length(HEAD) - 1); // Sorting sebelum searching
+            if (fibonacciSearch(arr, searchValue, length(HEAD)) != -1)
+                cout << "Data ditemukan!" << endl;
+            else
+                cout << "Data tidak ditemukan!" << endl;
+            break;
+        case 5:
+            cout << "Masukkan nilai yang ingin dicari dengan Jump Search: ";
+            cin >> searchValue;
+            quickSort(arr, 0, length(HEAD) - 1); // Sorting sebelum searching
+            if (jumpSearch(arr, searchValue, length(HEAD)) != -1)
+                cout << "Data ditemukan!" << endl;
+            else
+                cout << "Data tidak ditemukan!" << endl;
+            break;
+        case 6:
+            cout << "Masukkan teks: ";
+            cin.ignore();
+            getline(cin, text);
+            cout << "Masukkan pola yang ingin dicari: ";
+            getline(cin, pattern);
+            if (boyerMooreSearch(text, pattern) != -1)
+                cout << "Pola ditemukan!" << endl;
+            else
+                cout << "Pola tidak ditemukan!" << endl;
+            break;
+        case 7:
             cout << "Keluar dari program." << endl;
             break;
         default:
             cout << "Pilihan tidak valid!" << endl;
         }
 
-    } while (choice != 4);
+    } while (choice != 7);
 
     return 0;
 }
